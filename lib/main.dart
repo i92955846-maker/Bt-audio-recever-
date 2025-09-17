@@ -1,32 +1,27 @@
 import 'package:flutter/material.dart';
-import 'webrtc_service.dart';
-import 'bluetooth_spp.dart';
 import 'permissions_helper.dart';
 import 'audio_receiver.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'BT Audio Receiver',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const HomePage(),
+      title: 'Audio Forwarding App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: HomePage(),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
   @override
-  State<HomePage> createState() => _HomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
@@ -37,50 +32,34 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     PermissionsHelper.requestPermissions();
-    audioReceiver.init();   // 
+    audioReceiver.init();
   }
 
-  Future<void> _connect() async {
-    setState(() {
-      _status = "Connecting...";
-    });
-
-    bool connected = await BluetoothSPP.connect();
-    if (connected) {
-      await WebRTCService.start();
-    }
-
-    setState(() {
-      _isConnected = connected;
-      _status = connected ? "Connected" : "Failed to connect";
-    });
-  }
-
-  Future<void> _disconnect() async {
-    await BluetoothSPP.disconnect();
-    await WebRTCService.stop();
-
-    setState(() {
-      _isConnected = false;
-      _status = "Disconnected";
-    });
+  @override
+  void dispose() {
+    audioReceiver.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("BT Audio Receiver")),
+      appBar: AppBar(
+        title: Text("Audio Forwarding"),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              _status,
-              style: const TextStyle(fontSize: 20),
-            ),
-            const SizedBox(height: 20),
+            Text("Status: $_status"),
+            SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _isConnected ? _disconnect : _connect,
+              onPressed: () {
+                setState(() {
+                  _isConnected = !_isConnected;
+                  _status = _isConnected ? "Connected" : "Disconnected";
+                });
+              },
               child: Text(_isConnected ? "Disconnect" : "Connect"),
             ),
           ],
