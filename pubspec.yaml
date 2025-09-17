@@ -1,0 +1,17 @@
+name: bt_audio_receiver
+description: A Bluetooth-like audio forwarding app
+publish_to: 'none'
+
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_webrtc: ^0.9.28
+  permission_handler: ^10.2.0
+  flutter_bluetooth_serial: ^0.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
