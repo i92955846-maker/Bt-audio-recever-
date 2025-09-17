@@ -37,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     PermissionsHelper.requestPermissions();
+    audioReceiver.init();   // 
   }
 
   Future<void> _connect() async {
