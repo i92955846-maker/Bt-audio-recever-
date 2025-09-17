@@ -29,10 +29,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final WebRTCService _webrtcService = WebRTCService();
-  final BluetoothSPP _bluetoothSPP = BluetoothSPP();
-
-  String status = "Disconnected";
+  bool _isConnected = false;
+  String _status = "Disconnected";
 
   @override
   void initState() {
@@ -40,17 +38,29 @@ class _HomePageState extends State<HomePage> {
     PermissionsHelper.requestPermissions();
   }
 
-  void _connectBluetooth() async {
-    bool connected = await _bluetoothSPP.connect();
+  Future<void> _connect() async {
     setState(() {
-      status = connected ? "Bluetooth Connected" : "Failed to Connect";
+      _status = "Connecting...";
+    });
+
+    bool connected = await BluetoothSPP.connect();
+    if (connected) {
+      await WebRTCService.start();
+    }
+
+    setState(() {
+      _isConnected = connected;
+      _status = connected ? "Connected" : "Failed to connect";
     });
   }
 
-  void _startWebRTC() {
-    _webrtcService.initConnection();
+  Future<void> _disconnect() async {
+    await BluetoothSPP.disconnect();
+    await WebRTCService.stop();
+
     setState(() {
-      status = "WebRTC Initialized";
+      _isConnected = false;
+      _status = "Disconnected";
     });
   }
 
@@ -62,15 +72,14 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("Status: $status"),
+            Text(
+              _status,
+              style: const TextStyle(fontSize: 20),
+            ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _connectBluetooth,
-              child: const Text("Connect Bluetooth"),
-            ),
-            ElevatedButton(
-              onPressed: _startWebRTC,
-              child: const Text("Start WebRTC"),
+              onPressed: _isConnected ? _disconnect : _connect,
+              child: Text(_isConnected ? "Disconnect" : "Connect"),
             ),
           ],
         ),
